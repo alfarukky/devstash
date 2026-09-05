@@ -1,20 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ChevronDown,
-  Code2,
-  File,
-  FileText,
-  Folder,
-  Image as ImageIcon,
-  Link2,
-  Settings,
-  Sparkles,
-  Star,
-  Terminal,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronDown, File, Folder, Settings, Star } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -24,26 +11,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { collections, currentUser, itemTypes, items } from "@/lib/mock-data";
-
-const TYPE_ICONS: Record<string, LucideIcon> = {
-  code: Code2,
-  sparkles: Sparkles,
-  terminal: Terminal,
-  "file-text": FileText,
-  file: File,
-  image: ImageIcon,
-  link: Link2,
-};
-
-const TYPE_ICON_COLORS: Record<string, string> = {
-  blue: "text-blue-500",
-  purple: "text-purple-500",
-  orange: "text-orange-500",
-  yellow: "text-yellow-500",
-  gray: "text-gray-500",
-  pink: "text-pink-500",
-  green: "text-green-500",
-};
+import { TYPE_ICON_COLORS, TYPE_ICONS } from "@/lib/type-icons";
 
 const favoriteCollections = collections.filter((collection) => collection.isFavorite);
 const recentCollections = collections.filter((collection) => !collection.isFavorite);
