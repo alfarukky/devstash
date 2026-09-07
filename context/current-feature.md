@@ -1,20 +1,14 @@
 # Current Feature
 
-Dashboard Collections — replace the dummy collection data in the dashboard's main area with real data from the database, fetched via Prisma from Neon.
+<!-- Feature name and short discription -->
 
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
-- Create `src/lib/db/collections.ts` with data fetching functions
-- Fetch collections directly in server component
-- Collection card border color derived from most-used content type in that collection
-- Show small icons of all types in that collection
-- Keep the current design (6 cards of recent collections, same layout as `src/lib/mock-data.ts` version). Reference `@context/screenshots/dashboard-ui-main.png` if needed
-- Update collection stats display
-- Do not add the items underneath yet — that comes later
+<!-- Goals and requirement -->
 
 ## Notes
 
@@ -28,3 +22,4 @@ In Progress
 - 2026-09-05 — Dashboard UI Phase 3 implemented on `feature/dashboard-phase-3`: main area with 4 stats cards, a collections grid with type-colored accents, and pinned/recent item lists (`8f62897`). Added shadcn `card`/`badge` components (fixing a CLI-generated bug importing `cn` from a bogus package instead of `@/lib/utils`), and extracted item-type icon/color mappings out of `sidebar.tsx` into `src/lib/type-icons.ts` for reuse. Verified with `npm run build`/`lint` and headless-browser screenshots (desktop + mobile).
 - 2026-09-05 — Prisma + Neon PostgreSQL setup implemented on `feature/prisma-neon-setup`: schema for User/Item/ItemType/Collection/Tag/ItemTag plus NextAuth v5 models (Account, Session, VerificationToken), with indexes and cascade/set-null deletes matched to each relation (`7e940e9`). Pinned to Prisma 7.10.0 explicitly (npm's `latest` tag now resolves to an 8.0 release candidate) and followed the v7 breaking changes: `prisma-client` generator with explicit output path, required driver adapter (`@prisma/adapter-pg`) instead of a bare connection string, datasource url moved out of `schema.prisma` into `prisma.config.ts`, and `"type": "module"` for Prisma's ESM-only CLI. Since v7 dropped `directUrl` from the config, `DATABASE_URL` (pooled) is used by the app's `PrismaClient` adapter at runtime while `DIRECT_URL` (unpooled) is used only by `prisma.config.ts` for the CLI, avoiding migration-lock issues with Neon's connection pooler. Added `script/test-db.ts` (`npm run db:test`) as a manual connectivity check. Verified: `prisma validate`, `prisma generate`, an actual `prisma migrate dev` against the real Neon database, a smoke-test query through the pooled adapter, and `npm run build`/`lint`/`dev`.
 - 2026-09-05 — Database seed script implemented on `feature/seed-data`: `prisma/seed.ts` populates a demo user (bcryptjs-hashed password, 12 rounds), the 7 system item types, and 5 collections (React Patterns, AI Workflows, DevOps, Terminal Commands, Design Resources) with their items (`8b40a0c`). Also added `User.name` (needed by the spec's demo user and by NextAuth's Prisma adapter conventions, missing from the initial schema), and wired `prisma.config.ts`'s `migrations.seed` plus `npm run db:seed`, since Prisma 7 no longer auto-runs seeds after `migrate dev`. Verified: `prisma migrate dev` against the real Neon database, `tsc`/lint clean, `npm run build`, and an actual `npm run db:seed` run against Neon (completed end-to-end per its own success output).
+- 2026-09-07 — Dashboard Collections implemented on `feature/dashboard-collections`: `src/lib/db/collections.ts` fetches the dashboard's recent collections directly from Neon via Prisma, grouping each collection's items by type to derive the most-used type (`34d13c2`). Card border color and per-type icons now use that real data instead of `src/lib/mock-data.ts`; since seeded `ItemType.icon`/`color` are literal lucide-react component names and hex values (not the lowercase keys/named colors the mock-data lookup tables used), added a `getDbTypeIcon()` dynamic lookup in `type-icons.ts` and switched the card to inline styles for color. No auth yet, so the query scopes to the seeded demo user (`demo@devstash.io`), same as `prisma/seed.ts`. Also fixed an unrelated but related bug found while testing (`aa04cd6`): `src/lib/prisma.ts` built a new `PrismaPg` adapter/`pg.Pool` on every module evaluation regardless of whether the cached `PrismaClient` singleton was reused, leaking a pool on every dev Fast Refresh reload and eventually exhausting Neon's pooler as intermittent `PrismaClientKnownRequestError`s — fixed by only constructing the adapter when actually creating a new client. Verified: `npm run build`/`lint`, a headless-browser (Playwright) screenshot of `/dashboard` showing real collection data, and a repeated forced-HMR-reload stress test against the pool-leak fix.
