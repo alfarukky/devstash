@@ -79,3 +79,26 @@ export async function getItemStats(): Promise<ItemStats> {
 
   return { total, favorites };
 }
+
+export interface ItemTypeWithCount {
+  id: string;
+  name: string;
+  icon: string | null;
+  color: string | null;
+  itemCount: number;
+}
+
+export async function getItemTypesWithCounts(): Promise<ItemTypeWithCount[]> {
+  const user = await getDemoUser();
+  if (!user) return [];
+
+  const types = await prisma.itemType.findMany({
+    where: { isSystem: true },
+    orderBy: { id: "asc" },
+    include: {
+      items: { where: { userId: user.id }, select: { id: true } },
+    },
+  });
+
+  return types.map(({ items, ...type }) => ({ ...type, itemCount: items.length }));
+}

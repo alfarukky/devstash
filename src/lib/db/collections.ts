@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { getDemoUser } from "@/lib/db/user";
+import type { Prisma } from "@/generated/prisma/client";
 
 export interface CollectionType {
   id: string;
@@ -17,14 +18,17 @@ export interface CollectionWithStats {
   types: CollectionType[];
 }
 
-export async function getRecentCollections(limit = 6): Promise<CollectionWithStats[]> {
+async function getCollectionsWithStats(
+  where: Prisma.CollectionWhereInput,
+  take?: number,
+): Promise<CollectionWithStats[]> {
   const user = await getDemoUser();
   if (!user) return [];
 
   const collections = await prisma.collection.findMany({
-    where: { userId: user.id },
+    where: { userId: user.id, ...where },
     orderBy: { updatedAt: "desc" },
-    take: limit,
+    take,
     include: {
       items: {
         select: {
@@ -55,6 +59,18 @@ export async function getRecentCollections(limit = 6): Promise<CollectionWithSta
       types,
     };
   });
+}
+
+export function getRecentCollections(limit = 6): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({}, limit);
+}
+
+export function getFavoriteCollections(limit = 10): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({ isFavorite: true }, limit);
+}
+
+export function getRecentNonFavoriteCollections(limit = 10): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats({ isFavorite: false }, limit);
 }
 
 export interface CollectionStats {
