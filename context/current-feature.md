@@ -1,20 +1,14 @@
 # Current Feature
 
-Stats & Sidebar — replace remaining mock data with real database data: dashboard stats, sidebar item types, and sidebar collections. See @context/features/stats-sidebar-spec.md.
+<!-- Feature name and short discription -->
 
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
 <!-- Goals and requirement -->
-
-- Display stats pertaining to database data, keeping the current design/layout
-- Display item types in sidebar with their icons, linking to /items/[typename]
-- Add "View all collections" link under the collections list that goes to /collections
-- Keep the star icons for favorite collections but for recents, each collection should show a colored circle based on the most-used item type in that collection
-- Create `src/lib/db/items.ts` and add the database functions (reference `src/lib/db/collections.ts` if needed)
 
 ## Notes
 
@@ -30,3 +24,4 @@ In Progress
 - 2026-09-05 — Database seed script implemented on `feature/seed-data`: `prisma/seed.ts` populates a demo user (bcryptjs-hashed password, 12 rounds), the 7 system item types, and 5 collections (React Patterns, AI Workflows, DevOps, Terminal Commands, Design Resources) with their items (`8b40a0c`). Also added `User.name` (needed by the spec's demo user and by NextAuth's Prisma adapter conventions, missing from the initial schema), and wired `prisma.config.ts`'s `migrations.seed` plus `npm run db:seed`, since Prisma 7 no longer auto-runs seeds after `migrate dev`. Verified: `prisma migrate dev` against the real Neon database, `tsc`/lint clean, `npm run build`, and an actual `npm run db:seed` run against Neon (completed end-to-end per its own success output).
 - 2026-09-07 — Dashboard Collections implemented on `feature/dashboard-collections`: `src/lib/db/collections.ts` fetches the dashboard's recent collections directly from Neon via Prisma, grouping each collection's items by type to derive the most-used type (`34d13c2`). Card border color and per-type icons now use that real data instead of `src/lib/mock-data.ts`; since seeded `ItemType.icon`/`color` are literal lucide-react component names and hex values (not the lowercase keys/named colors the mock-data lookup tables used), added a `getDbTypeIcon()` dynamic lookup in `type-icons.ts` and switched the card to inline styles for color. No auth yet, so the query scopes to the seeded demo user (`demo@devstash.io`), same as `prisma/seed.ts`. Also fixed an unrelated but related bug found while testing (`aa04cd6`): `src/lib/prisma.ts` built a new `PrismaPg` adapter/`pg.Pool` on every module evaluation regardless of whether the cached `PrismaClient` singleton was reused, leaking a pool on every dev Fast Refresh reload and eventually exhausting Neon's pooler as intermittent `PrismaClientKnownRequestError`s — fixed by only constructing the adapter when actually creating a new client. Verified: `npm run build`/`lint`, a headless-browser (Playwright) screenshot of `/dashboard` showing real collection data, and a repeated forced-HMR-reload stress test against the pool-leak fix.
 - 2026-09-07 — Dashboard Items implemented on `feature/dashboard-items`: `src/lib/db/items.ts` fetches pinned items, recent items, and item stats directly from Neon via Prisma (`89b9c3f`). Item row icon/border color now derives from the item's type, same approach as the collection cards; hit the same `react-hooks/static-components` ESLint error as before when computing the icon component in the row's own render body, fixed by moving it into a lowercase render-helper function instead of a capitalized variable (the rule only flags capitalized component-like bindings). Extracted a shared `getDemoUser()` helper (`src/lib/db/user.ts`) used by both `items.ts` and `collections.ts`. Dashboard stats cards now pull real item/collection totals and favorite counts instead of `src/lib/mock-data.ts`, which is now only used by the sidebar. Verified: `npm run build`/`lint`, and a headless-browser (Playwright) screenshot of `/dashboard` showing real stats (18 items / 5 collections / 0 favorites) and recent items, with the pinned section correctly absent since no seeded item is pinned.
+- 2026-09-07 — Stats & Sidebar implemented on `feature/stats-sidebar`: sidebar item types and collections now come from Neon via Prisma instead of `mock-data.ts` (`d310ba2`); dashboard stats were already database-backed from the prior feature. Added `getItemTypesWithCounts()` to `src/lib/db/items.ts`, and refactored `src/lib/db/collections.ts` around a shared `getCollectionsWithStats()` helper backing new `getFavoriteCollections()` and `getRecentNonFavoriteCollections()` functions. `Sidebar` became a presentational client component fed via props from the dashboard page (a server component) through `DashboardShell`, since it stays client-side for its collapsible sections; item type/collection accent colors use the DB's `getDbTypeIcon()` lookup, same as the collection cards. Recent collections show a colored circle for their most-used item type instead of an item count, and a "View all collections" link was added under the list. Verified: `npm run build`/`lint`, and a headless-browser (Playwright) screenshot of `/dashboard` on a clean server start (cache cleared) showing real type counts (4/3/5/0/0/0/6 summing to the 18-item stat), colored collection dots, and correct `/items/{type}`/`/collections` links; a runtime error initially reported after this was traced to a stale Next.js dev Router Cache payload, not a code issue — confirmed by reproducing correctly on a fresh load.
