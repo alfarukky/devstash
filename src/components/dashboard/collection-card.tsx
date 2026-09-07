@@ -1,4 +1,4 @@
-import { File, MoreHorizontal, Star } from "lucide-react";
+import { MoreHorizontal, Star } from "lucide-react";
 
 import {
   Card,
@@ -9,20 +9,18 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { itemTypes, type Collection } from "@/lib/mock-data";
-import { TYPE_BORDER_COLORS, TYPE_ICON_COLORS, TYPE_ICONS } from "@/lib/type-icons";
+import type { CollectionWithStats } from "@/lib/db/collections";
+import { getDbTypeIcon } from "@/lib/type-icons";
 
 interface CollectionCardProps {
-  collection: Collection;
+  collection: CollectionWithStats;
 }
 
 export function CollectionCard({ collection }: CollectionCardProps) {
-  const firstType = itemTypes.find((type) => type.id === collection.itemTypeIds[0]);
-  const borderColor = TYPE_BORDER_COLORS[firstType?.color ?? ""] ?? "border-l-border";
+  const primaryColor = collection.types[0]?.color ?? "var(--border)";
 
   return (
-    <Card className={cn("border-l-4", borderColor)}>
+    <Card className="border-l-4" style={{ borderLeftColor: primaryColor }}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {collection.name}
@@ -40,13 +38,9 @@ export function CollectionCard({ collection }: CollectionCardProps) {
       <CardContent className="flex flex-col gap-3">
         <p className="text-sm text-muted-foreground">{collection.description}</p>
         <div className="flex items-center gap-2">
-          {collection.itemTypeIds.map((typeId) => {
-            const type = itemTypes.find((t) => t.id === typeId);
-            if (!type) return null;
-            const Icon = TYPE_ICONS[type.icon] ?? File;
-            return (
-              <Icon key={typeId} className={cn("size-4", TYPE_ICON_COLORS[type.color])} />
-            );
+          {collection.types.map((type) => {
+            const Icon = getDbTypeIcon(type.icon);
+            return <Icon key={type.id} className="size-4" style={{ color: type.color ?? undefined }} />;
           })}
         </div>
       </CardContent>
