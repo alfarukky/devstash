@@ -6,6 +6,7 @@ import {
   Link2,
   Sparkles,
   Terminal,
+  icons as lucideIcons,
   type LucideIcon,
 } from "lucide-react";
 
@@ -48,3 +49,15 @@ export const TYPE_ICON_BG_COLORS: Record<string, string> = {
   pink: "bg-pink-500/10",
   green: "bg-green-500/10",
 };
+
+/**
+ * ItemType records from the database store `icon` as a literal lucide-react
+ * component name (e.g. "Code", "StickyNote") and `color` as a hex value,
+ * unlike the mock-data lookup tables above which use lowercase keys/names.
+ */
+export function getDbTypeIcon(iconName: string | null): LucideIcon {
+  if (iconName && iconName in lucideIcons) {
+    return lucideIcons[iconName as keyof typeof lucideIcons];
+  }
+  return File;
+}
