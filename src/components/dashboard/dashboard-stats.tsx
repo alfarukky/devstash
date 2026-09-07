@@ -1,22 +1,17 @@
 import { Folder, Heart, Package, Star } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { collections, items } from "@/lib/mock-data";
+import { getCollectionStats } from "@/lib/db/collections";
+import { getItemStats } from "@/lib/db/items";
 
-export function DashboardStats() {
+export async function DashboardStats() {
+  const [itemStats, collectionStats] = await Promise.all([getItemStats(), getCollectionStats()]);
+
   const stats = [
-    { label: "Items", value: items.length, icon: Package },
-    { label: "Collections", value: collections.length, icon: Folder },
-    {
-      label: "Favorite Items",
-      value: items.filter((item) => item.isFavorite).length,
-      icon: Star,
-    },
-    {
-      label: "Favorite Collections",
-      value: collections.filter((collection) => collection.isFavorite).length,
-      icon: Heart,
-    },
+    { label: "Items", value: itemStats.total, icon: Package },
+    { label: "Collections", value: collectionStats.total, icon: Folder },
+    { label: "Favorite Items", value: itemStats.favorites, icon: Star },
+    { label: "Favorite Collections", value: collectionStats.favorites, icon: Heart },
   ];
 
   return (
