@@ -1,34 +1,35 @@
-import { File, Pin, Star } from "lucide-react";
+import { Pin, Star } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { itemTypes, type Item } from "@/lib/mock-data";
-import { TYPE_BORDER_COLORS, TYPE_ICON_BG_COLORS, TYPE_ICON_COLORS, TYPE_ICONS } from "@/lib/type-icons";
+import type { ItemWithRelations } from "@/lib/db/items";
+import { getDbTypeIcon } from "@/lib/type-icons";
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function formatDate(date: Date) {
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function renderItemTypeIcon(iconName: string | null, color: string | undefined) {
+  const Icon = getDbTypeIcon(iconName);
+  return <Icon className="size-5" style={{ color }} />;
 }
 
 interface ItemRowProps {
-  item: Item;
+  item: ItemWithRelations;
 }
 
 export function ItemRow({ item }: ItemRowProps) {
-  const type = itemTypes.find((t) => t.id === item.typeId);
-  const Icon = type ? TYPE_ICONS[type.icon] ?? File : File;
-  const borderColor = TYPE_BORDER_COLORS[type?.color ?? ""] ?? "border-l-border";
-  const iconBg = TYPE_ICON_BG_COLORS[type?.color ?? ""] ?? "bg-muted";
-  const iconColor = TYPE_ICON_COLORS[type?.color ?? ""] ?? "text-muted-foreground";
+  const color = item.type.color ?? undefined;
 
   return (
     <div
-      className={cn(
-        "flex items-center gap-4 rounded-xl border-l-4 bg-card p-4 text-card-foreground ring-1 ring-foreground/10",
-        borderColor
-      )}
+      className="flex items-center gap-4 rounded-xl border-l-4 bg-card p-4 text-card-foreground ring-1 ring-foreground/10"
+      style={{ borderLeftColor: color }}
     >
-      <div className={cn("flex size-10 shrink-0 items-center justify-center rounded-lg", iconBg)}>
-        <Icon className={cn("size-5", iconColor)} />
+      <div
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg"
+        style={{ backgroundColor: color ? `color-mix(in oklch, ${color} 10%, transparent)` : undefined }}
+      >
+        {renderItemTypeIcon(item.type.icon, color)}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">

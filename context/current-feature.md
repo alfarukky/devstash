@@ -1,14 +1,20 @@
 # Current Feature
 
-<!-- Feature name and short discription -->
+Dashboard Items — replace the dummy pinned/recent item data in the dashboard's main area with real data from the database, fetched via Prisma from Neon.
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirement -->
+- Create `src/lib/db/items.ts` with data fetching functions
+- Fetch items (pinned and recent) directly in server component
+- Item card icon/border derived from the item type
+- Display item type tags and anything else currently there. Reference `@context/screenshots/dashboard-ui-main.png` if needed
+- Update collection stats display
+- If there are no pinned items, nothing should display there
+- Keep the current design/layout
 
 ## Notes
 
