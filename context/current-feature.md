@@ -1,14 +1,20 @@
 # Current Feature
 
-<!-- Feature name and short discription -->
+Stats & Sidebar — replace remaining mock data with real database data: dashboard stats, sidebar item types, and sidebar collections. See @context/features/stats-sidebar-spec.md.
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
 <!-- Goals and requirement -->
+
+- Display stats pertaining to database data, keeping the current design/layout
+- Display item types in sidebar with their icons, linking to /items/[typename]
+- Add "View all collections" link under the collections list that goes to /collections
+- Keep the star icons for favorite collections but for recents, each collection should show a colored circle based on the most-used item type in that collection
+- Create `src/lib/db/items.ts` and add the database functions (reference `src/lib/db/collections.ts` if needed)
 
 ## Notes
 

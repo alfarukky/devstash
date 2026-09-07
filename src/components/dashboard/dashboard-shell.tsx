@@ -10,10 +10,24 @@ import {
   SheetDescription,
   SheetTitle,
 } from "@/components/ui/sheet";
+import type { CollectionWithStats } from "@/lib/db/collections";
+import type { ItemTypeWithCount } from "@/lib/db/items";
 
 const DESKTOP_QUERY = "(min-width: 768px)";
 
-export function DashboardShell({ children }: { children: ReactNode }) {
+interface DashboardShellProps {
+  children: ReactNode;
+  sidebarItemTypes: ItemTypeWithCount[];
+  sidebarFavoriteCollections: CollectionWithStats[];
+  sidebarRecentCollections: CollectionWithStats[];
+}
+
+export function DashboardShell({
+  children,
+  sidebarItemTypes,
+  sidebarFavoriteCollections,
+  sidebarRecentCollections,
+}: DashboardShellProps) {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -31,7 +45,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
       <div className="flex flex-1 overflow-hidden">
         {desktopSidebarOpen && (
           <aside className="hidden w-72 shrink-0 border-r border-sidebar-border bg-sidebar md:block">
-            <Sidebar />
+            <Sidebar
+              itemTypes={sidebarItemTypes}
+              favoriteCollections={sidebarFavoriteCollections}
+              recentCollections={sidebarRecentCollections}
+            />
           </aside>
         )}
 
@@ -41,7 +59,11 @@ export function DashboardShell({ children }: { children: ReactNode }) {
             <SheetDescription className="sr-only">
               Types and collections navigation
             </SheetDescription>
-            <Sidebar />
+            <Sidebar
+              itemTypes={sidebarItemTypes}
+              favoriteCollections={sidebarFavoriteCollections}
+              recentCollections={sidebarRecentCollections}
+            />
           </SheetContent>
         </Sheet>
 
