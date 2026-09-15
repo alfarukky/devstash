@@ -6,6 +6,8 @@ import { RecentItemsSection } from "@/components/dashboard/recent-items-section"
 import { getFavoriteCollections, getRecentNonFavoriteCollections } from "@/lib/db/collections";
 import { getItemTypesWithCounts } from "@/lib/db/items";
 
+export const dynamic = "force-dynamic";
+
 export default async function DashboardPage() {
   const [sidebarItemTypes, sidebarFavoriteCollections, sidebarRecentCollections] =
     await Promise.all([
