@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/collapsible";
 import type { CollectionWithStats } from "@/lib/db/collections";
 import type { ItemTypeWithCount } from "@/lib/db/items";
-import { currentUser } from "@/lib/mock-data";
 import { getDbTypeIcon } from "@/lib/type-icons";
 
 function initials(name: string) {
@@ -31,13 +30,19 @@ function capitalize(value: string) {
 
 const PRO_ONLY_TYPES = new Set(["file", "image"]);
 
+interface SidebarUser {
+  name: string;
+  email: string;
+}
+
 interface SidebarProps {
   itemTypes: ItemTypeWithCount[];
   favoriteCollections: CollectionWithStats[];
   recentCollections: CollectionWithStats[];
+  user: SidebarUser;
 }
 
-export function Sidebar({ itemTypes, favoriteCollections, recentCollections }: SidebarProps) {
+export function Sidebar({ itemTypes, favoriteCollections, recentCollections, user }: SidebarProps) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto p-4 pt-14 md:pt-4">
@@ -141,13 +146,13 @@ export function Sidebar({ itemTypes, favoriteCollections, recentCollections }: S
 
       <div className="flex shrink-0 items-center gap-2 border-t border-sidebar-border p-4">
         <Avatar>
-          <AvatarFallback>{initials(currentUser.name)}</AvatarFallback>
+          <AvatarFallback>{initials(user.name)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium text-sidebar-foreground">
-            {currentUser.name}
+            {user.name}
           </p>
-          <p className="truncate text-xs text-muted-foreground">{currentUser.email}</p>
+          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
         </div>
         <Button variant="ghost" size="icon" aria-label="Settings">
           <Settings className="size-4" />

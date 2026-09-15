@@ -20,6 +20,7 @@ interface DashboardShellProps {
   sidebarItemTypes: ItemTypeWithCount[];
   sidebarFavoriteCollections: CollectionWithStats[];
   sidebarRecentCollections: CollectionWithStats[];
+  sidebarUser: { name: string; email: string };
 }
 
 export function DashboardShell({
@@ -27,6 +28,7 @@ export function DashboardShell({
   sidebarItemTypes,
   sidebarFavoriteCollections,
   sidebarRecentCollections,
+  sidebarUser,
 }: DashboardShellProps) {
   const [desktopSidebarOpen, setDesktopSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -49,6 +51,7 @@ export function DashboardShell({
               itemTypes={sidebarItemTypes}
               favoriteCollections={sidebarFavoriteCollections}
               recentCollections={sidebarRecentCollections}
+              user={sidebarUser}
             />
           </aside>
         )}
@@ -63,6 +66,7 @@ export function DashboardShell({
               itemTypes={sidebarItemTypes}
               favoriteCollections={sidebarFavoriteCollections}
               recentCollections={sidebarRecentCollections}
+              user={sidebarUser}
             />
           </SheetContent>
         </Sheet>

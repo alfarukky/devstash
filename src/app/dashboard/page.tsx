@@ -5,15 +5,17 @@ import { PinnedItemsSection } from "@/components/dashboard/pinned-items-section"
 import { RecentItemsSection } from "@/components/dashboard/recent-items-section";
 import { getFavoriteCollections, getRecentNonFavoriteCollections } from "@/lib/db/collections";
 import { getItemTypesWithCounts } from "@/lib/db/items";
+import { getDemoUser } from "@/lib/db/user";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [sidebarItemTypes, sidebarFavoriteCollections, sidebarRecentCollections] =
+  const [sidebarItemTypes, sidebarFavoriteCollections, sidebarRecentCollections, sidebarUser] =
     await Promise.all([
       getItemTypesWithCounts(),
       getFavoriteCollections(),
       getRecentNonFavoriteCollections(),
+      getDemoUser(),
     ]);
 
   return (
@@ -21,6 +23,10 @@ export default async function DashboardPage() {
       sidebarItemTypes={sidebarItemTypes}
       sidebarFavoriteCollections={sidebarFavoriteCollections}
       sidebarRecentCollections={sidebarRecentCollections}
+      sidebarUser={{
+        name: sidebarUser?.name ?? "Guest",
+        email: sidebarUser?.email ?? "",
+      }}
     >
       <div className="mx-auto flex max-w-6xl flex-col gap-8">
         <div>
