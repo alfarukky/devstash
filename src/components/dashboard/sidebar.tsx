@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChevronDown, Folder, Settings, Star } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -27,6 +28,8 @@ function initials(name: string) {
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
+
+const PRO_ONLY_TYPES = new Set(["file", "image"]);
 
 interface SidebarProps {
   itemTypes: ItemTypeWithCount[];
@@ -55,6 +58,11 @@ export function Sidebar({ itemTypes, favoriteCollections, recentCollections }: S
                   <span className="flex items-center gap-2">
                     <Icon className="size-4" style={{ color: type.color ?? undefined }} />
                     {capitalize(type.name)}
+                    {PRO_ONLY_TYPES.has(type.name) && (
+                      <Badge variant="outline" className="text-[10px] font-medium tracking-wide text-muted-foreground">
+                        PRO
+                      </Badge>
+                    )}
                   </span>
                   <span className="text-xs text-muted-foreground">{type.itemCount}</span>
                 </Link>

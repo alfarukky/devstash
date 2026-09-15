@@ -1,0 +1,11 @@
+# Add pro Badge to the sidebar
+
+## Overview
+
+Add a pro badge to the files and the image type in the sidebar
+
+## Requirements
+
+- Use ShadCN UI badge component
+- Make badge clean and subtle
+- Make pro all uppercase
