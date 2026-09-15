@@ -2,15 +2,26 @@
 
 <!-- Feature name and short discription -->
 
+Codebase audit quick-win fixes — small, low-risk cleanups identified by a full security/performance/code-quality audit of the dashboard (src/, prisma/, root config).
+
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+Implemented on `fix/codebase-audit-quick-wins` — build/lint pass, verified in browser. Pending commit.
 
 ## Goals
 
-<!-- Goals and requirement -->
+- [x] `src/lib/db/user.ts:6-8` — wrap `getDemoUser()` with React's `cache()` (`import { cache } from "react"`) so the 6+ call sites across `collections.ts`/`items.ts` dedupe into one query per request instead of firing an identical `SELECT` per call on every dashboard load.
+- [x] `src/lib/db/user.ts:6-8` — add a `select` to the `prisma.user.findUnique` call so it stops pulling the bcrypt `password` hash and Stripe IDs. Scoped to `{ id: true, name: true, email: true }` rather than `id` alone, since the sidebar fix below needs `name`/`email` too.
+- [x] `src/components/dashboard/sidebar.tsx:16,144,150` — stop importing `currentUser` from `src/lib/mock-data.ts` for the avatar block ("John Doe" / `devStash@example.com`); pass the real demo user's name/email down through `DashboardShell` → `Sidebar` the same way item types/collections already are, so the sidebar shows the actual seeded user ("Demo User" / `demo@devstash.io`).
+- [x] `src/lib/db/items.ts:39-50` — add a `take` limit to `getPinnedItems()` (it's the only list query in `items.ts`/`collections.ts` with no bound at all); pinning has no cap today, so a user who pins many items would render an unbounded list straight into the dashboard.
+- [x] `src/lib/type-icons.ts:1-11,58-63` — `getDbTypeIcon()` imports `icons` (the full dynamic lookup object) from `lucide-react`, which pulls all ~4,100 icon components into the bundle — including into the client-side `Sidebar` — even though only the 7 seeded type icons (`Code`, `Sparkles`, `Terminal`, `StickyNote`, `File`, `Image`, `Link`) are ever used. Replace it with a small explicit `Record<string, LucideIcon>` map (same pattern as the existing `TYPE_ICONS` map further up the same file) keyed by the DB's PascalCase icon names.
+- [x] `src/lib/db/items.ts:91-104` — `getItemTypesWithCounts()` fetches every matching `Item` row (via `include: { items: { where: { userId } } }`) just to call `.length` on it in JS; switch to `_count: { select: { items: { where: { userId: user.id } } } }` so Postgres returns counts directly instead of full row sets.
 
 ## Notes
+
+`src/lib/mock-data.ts` was deleted as part of the sidebar-avatar fix above: it had no other importers once the sidebar's `currentUser` import was removed, so it was fully dead code rather than a file to leave orphaned.
+
+Full audit findings (including non-quick-win items like the dashboard section fetch waterfall in `src/app/dashboard/page.tsx`, the unbounded per-item-count queries in `getCollectionsWithStats()` in `collections.ts`, and missing composite indexes on `Item` for the `(userId, isPinned)` / `(userId, createdAt)` access patterns) were reported to the user but are not documented as follow-up features yet — see the 2026-09-15 full-codebase-audit conversation for the complete list.
 
 ## History
 

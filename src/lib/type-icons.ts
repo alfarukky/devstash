@@ -1,12 +1,15 @@
 import {
+  Code,
   Code2,
   File,
   FileText,
+  Image,
   Image as ImageIcon,
+  Link,
   Link2,
   Sparkles,
+  StickyNote,
   Terminal,
-  icons as lucideIcons,
   type LucideIcon,
 } from "lucide-react";
 
@@ -55,9 +58,19 @@ export const TYPE_ICON_BG_COLORS: Record<string, string> = {
  * component name (e.g. "Code", "StickyNote") and `color` as a hex value,
  * unlike the mock-data lookup tables above which use lowercase keys/names.
  */
+const DB_TYPE_ICONS: Record<string, LucideIcon> = {
+  Code,
+  Sparkles,
+  Terminal,
+  StickyNote,
+  File,
+  Image,
+  Link,
+};
+
 export function getDbTypeIcon(iconName: string | null): LucideIcon {
-  if (iconName && iconName in lucideIcons) {
-    return lucideIcons[iconName as keyof typeof lucideIcons];
+  if (iconName && iconName in DB_TYPE_ICONS) {
+    return DB_TYPE_ICONS[iconName];
   }
   return File;
 }

@@ -36,13 +36,14 @@ function toItemWithRelations({ tags, ...item }: RawItem): ItemWithRelations {
   return { ...item, tags: tags.map(({ tag }) => tag.name) };
 }
 
-export async function getPinnedItems(): Promise<ItemWithRelations[]> {
+export async function getPinnedItems(limit = 10): Promise<ItemWithRelations[]> {
   const user = await getDemoUser();
   if (!user) return [];
 
   const items = await prisma.item.findMany({
     where: { userId: user.id, isPinned: true },
     orderBy: { createdAt: "desc" },
+    take: limit,
     select: ITEM_SELECT,
   });
 
@@ -95,10 +96,14 @@ export async function getItemTypesWithCounts(): Promise<ItemTypeWithCount[]> {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },
     orderBy: { id: "asc" },
-    include: {
-      items: { where: { userId: user.id }, select: { id: true } },
+    select: {
+      id: true,
+      name: true,
+      icon: true,
+      color: true,
+      _count: { select: { items: { where: { userId: user.id } } } },
     },
   });
 
-  return types.map(({ items, ...type }) => ({ ...type, itemCount: items.length }));
+  return types.map(({ _count, ...type }) => ({ ...type, itemCount: _count.items }));
 }
