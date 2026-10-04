@@ -17,6 +17,7 @@
     "db:test": "tsx script/test-db.ts"
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.11.3",
     "@base-ui/react": "^1.7.0",
     "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
@@ -25,6 +26,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^1.39.0",
     "next": "16.3.1",
+    "next-auth": "5.0.0-beta.32",
     "pg": "8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
