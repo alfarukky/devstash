@@ -1,8 +1,20 @@
 import type { NextAuthConfig } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 
+// Edge-safe config used by the proxy. The Credentials provider is a placeholder
+// here; `auth.ts` overrides it with the real bcrypt/Prisma validation.
 export default {
-  providers: [GitHub],
+  providers: [
+    GitHub,
+    Credentials({
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: () => null,
+    }),
+  ],
   callbacks: {
     session({ session, token }) {
       if (token.sub) {
