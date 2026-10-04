@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import type { CollectionWithStats } from "@/lib/db/collections";
 import type { ItemTypeWithCount } from "@/lib/db/items";
+import type { SessionUser } from "@/types/auth";
 
 const DESKTOP_QUERY = "(min-width: 768px)";
 
@@ -20,7 +21,7 @@ interface DashboardShellProps {
   sidebarItemTypes: ItemTypeWithCount[];
   sidebarFavoriteCollections: CollectionWithStats[];
   sidebarRecentCollections: CollectionWithStats[];
-  sidebarUser: { name: string; email: string };
+  sidebarUser: SessionUser;
 }
 
 export function DashboardShell({
