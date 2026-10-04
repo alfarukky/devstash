@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ChevronDown, Folder, Settings, Star } from "lucide-react";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserMenu } from "@/components/dashboard/user-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,15 +14,7 @@ import {
 import type { CollectionWithStats } from "@/lib/db/collections";
 import type { ItemTypeWithCount } from "@/lib/db/items";
 import { getDbTypeIcon } from "@/lib/type-icons";
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
+import type { SessionUser } from "@/types/auth";
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -30,16 +22,11 @@ function capitalize(value: string) {
 
 const PRO_ONLY_TYPES = new Set(["file", "image"]);
 
-interface SidebarUser {
-  name: string;
-  email: string;
-}
-
 interface SidebarProps {
   itemTypes: ItemTypeWithCount[];
   favoriteCollections: CollectionWithStats[];
   recentCollections: CollectionWithStats[];
-  user: SidebarUser;
+  user: SessionUser;
 }
 
 export function Sidebar({ itemTypes, favoriteCollections, recentCollections, user }: SidebarProps) {
@@ -144,16 +131,8 @@ export function Sidebar({ itemTypes, favoriteCollections, recentCollections, use
         </Collapsible>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 border-t border-sidebar-border p-4">
-        <Avatar>
-          <AvatarFallback>{initials(user.name)}</AvatarFallback>
-        </Avatar>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-sidebar-foreground">
-            {user.name}
-          </p>
-          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
-        </div>
+      <div className="flex shrink-0 items-center gap-2 border-t border-sidebar-border p-3">
+        <UserMenu user={user} />
         <Button variant="ghost" size="icon" aria-label="Settings">
           <Settings className="size-4" />
         </Button>

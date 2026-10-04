@@ -15,6 +15,9 @@ export default {
       authorize: () => null,
     }),
   ],
+  pages: {
+    signIn: "/sign-in",
+  },
   callbacks: {
     session({ session, token }) {
       if (token.sub) {
