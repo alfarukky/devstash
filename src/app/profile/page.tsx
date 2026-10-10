@@ -20,9 +20,9 @@ export default async function ProfilePage() {
   const [profile, sidebarItemTypes, sidebarFavoriteCollections, sidebarRecentCollections] =
     await Promise.all([
       getProfile(session.user.id),
-      getItemTypesWithCounts(),
-      getFavoriteCollections(),
-      getRecentNonFavoriteCollections(),
+      getItemTypesWithCounts(session.user.id),
+      getFavoriteCollections(session.user.id),
+      getRecentNonFavoriteCollections(session.user.id),
     ]);
   // The session can outlive the user row (e.g. deleted from another device).
   if (!profile) redirect("/sign-in");

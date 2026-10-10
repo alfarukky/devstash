@@ -3,8 +3,12 @@ import { Pin } from "lucide-react";
 import { ItemRow } from "@/components/dashboard/item-row";
 import { getPinnedItems } from "@/lib/db/items";
 
-export async function PinnedItemsSection() {
-  const pinnedItems = await getPinnedItems();
+interface PinnedItemsSectionProps {
+  userId: string;
+}
+
+export async function PinnedItemsSection({ userId }: PinnedItemsSectionProps) {
+  const pinnedItems = await getPinnedItems(userId);
 
   if (pinnedItems.length === 0) return null;
 
