@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 
 import { emailSchema, resetPasswordSchema } from "@/lib/auth-schemas";
 import { issuePasswordResetEmail, resetPassword } from "@/lib/password-reset";
@@ -11,7 +12,8 @@ const RESET_FAILURES = {
   expired: "This reset link has expired. Request a new one.",
 };
 
-// Always reports success so the response doesn't reveal whether an account exists.
+// Always reports success, and does the lookup and send after responding, so neither the
+// result nor the response time reveals whether an account exists.
 export async function requestPasswordReset(
   _prevState: AuthActionResult,
   formData: FormData,
@@ -21,12 +23,14 @@ export async function requestPasswordReset(
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid email" };
   }
 
-  try {
-    await issuePasswordResetEmail(parsed.data);
-  } catch (error) {
-    console.error("Password reset email failed:", error);
-    return { success: false, error: "Couldn't send the email. Please try again." };
-  }
+  const email = parsed.data;
+  after(async () => {
+    try {
+      await issuePasswordResetEmail(email);
+    } catch (error) {
+      console.error("Password reset email failed:", error);
+    }
+  });
 
   return { success: true };
 }

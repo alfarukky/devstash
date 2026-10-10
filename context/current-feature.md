@@ -1,16 +1,29 @@
-# Current Feature
+# Current Feature: Auth Audit Quick Wins + Session-Scoped Dashboard Data
 
-<!-- Feature name and short discription -->
+Two small follow-ups, kept on separate branches: fix the Medium and Low enumeration findings from `docs/audit-results/AUTH_SECURITY_REVIEW.md` (2026-10-10), and make the dashboard and sidebar read the signed-in user's data instead of the seeded demo user's.
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirement -->
+**Part 1 — `fix/auth-audit-quick-wins`**
+- `requestPasswordReset` and `resendVerificationEmail` return the same success result whether or not the account exists or the email send fails; failures are only logged server-side
+- The lookup and email send for those two actions run after the response (`after()` from `next/server`), so response time doesn't reveal whether an account exists
+- Credentials sign-in runs `bcrypt.compare` against a fixed dummy hash when the email is unknown or has no password, so timing doesn't reveal which emails have password accounts
+
+**Part 2 — `feature/session-dashboard-data`**
+- Dashboard stats, collections, pinned and recent items, and the sidebar's types and collections are all scoped to the signed-in user's id, on both `/dashboard` and `/profile`
+- `getDemoUser()` and its TODO are removed once nothing imports it
+- A new user with no data sees zero counts and empty states rather than the demo user's data
 
 ## Notes
+
+- Rate limiting (the other Medium finding) is deliberately out of scope for now
+- Registration still reveals a taken email (409) by design; that's not changed here
+- `after()` work still needs its errors caught and logged, since nothing awaits it
+- Part 2 changes the db helpers in `src/lib/db/items.ts` and `collections.ts` to take a `userId` instead of calling `getDemoUser()`; the dashboard section components currently fetch their own data, so they need the user id passed in
 
 ## History
 
