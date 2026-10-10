@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { getDemoUser } from "@/lib/db/user";
 import type { Prisma } from "@/generated/prisma/client";
 
 export interface CollectionType {
@@ -19,14 +18,12 @@ export interface CollectionWithStats {
 }
 
 async function getCollectionsWithStats(
+  userId: string,
   where: Prisma.CollectionWhereInput,
   take?: number,
 ): Promise<CollectionWithStats[]> {
-  const user = await getDemoUser();
-  if (!user) return [];
-
   const collections = await prisma.collection.findMany({
-    where: { userId: user.id, ...where },
+    where: { userId, ...where },
     orderBy: { updatedAt: "desc" },
     take,
     include: {
@@ -61,16 +58,19 @@ async function getCollectionsWithStats(
   });
 }
 
-export function getRecentCollections(limit = 6): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({}, limit);
+export function getRecentCollections(userId: string, limit = 6): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats(userId, {}, limit);
 }
 
-export function getFavoriteCollections(limit = 10): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({ isFavorite: true }, limit);
+export function getFavoriteCollections(userId: string, limit = 10): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats(userId, { isFavorite: true }, limit);
 }
 
-export function getRecentNonFavoriteCollections(limit = 10): Promise<CollectionWithStats[]> {
-  return getCollectionsWithStats({ isFavorite: false }, limit);
+export function getRecentNonFavoriteCollections(
+  userId: string,
+  limit = 10,
+): Promise<CollectionWithStats[]> {
+  return getCollectionsWithStats(userId, { isFavorite: false }, limit);
 }
 
 export interface CollectionStats {
@@ -78,13 +78,10 @@ export interface CollectionStats {
   favorites: number;
 }
 
-export async function getCollectionStats(): Promise<CollectionStats> {
-  const user = await getDemoUser();
-  if (!user) return { total: 0, favorites: 0 };
-
+export async function getCollectionStats(userId: string): Promise<CollectionStats> {
   const [total, favorites] = await Promise.all([
-    prisma.collection.count({ where: { userId: user.id } }),
-    prisma.collection.count({ where: { userId: user.id, isFavorite: true } }),
+    prisma.collection.count({ where: { userId } }),
+    prisma.collection.count({ where: { userId, isFavorite: true } }),
   ]);
 
   return { total, favorites };

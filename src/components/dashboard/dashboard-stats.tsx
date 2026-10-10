@@ -4,8 +4,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getCollectionStats } from "@/lib/db/collections";
 import { getItemStats } from "@/lib/db/items";
 
-export async function DashboardStats() {
-  const [itemStats, collectionStats] = await Promise.all([getItemStats(), getCollectionStats()]);
+interface DashboardStatsProps {
+  userId: string;
+}
+
+export async function DashboardStats({ userId }: DashboardStatsProps) {
+  const [itemStats, collectionStats] = await Promise.all([
+    getItemStats(userId),
+    getCollectionStats(userId),
+  ]);
 
   const stats = [
     { label: "Items", value: itemStats.total, icon: Package },

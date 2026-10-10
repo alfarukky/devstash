@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { getDemoUser } from "@/lib/db/user";
 import type { Prisma } from "@/generated/prisma/client";
 
 const ITEM_SELECT = {
@@ -36,12 +35,9 @@ function toItemWithRelations({ tags, ...item }: RawItem): ItemWithRelations {
   return { ...item, tags: tags.map(({ tag }) => tag.name) };
 }
 
-export async function getPinnedItems(limit = 10): Promise<ItemWithRelations[]> {
-  const user = await getDemoUser();
-  if (!user) return [];
-
+export async function getPinnedItems(userId: string, limit = 10): Promise<ItemWithRelations[]> {
   const items = await prisma.item.findMany({
-    where: { userId: user.id, isPinned: true },
+    where: { userId, isPinned: true },
     orderBy: { createdAt: "desc" },
     take: limit,
     select: ITEM_SELECT,
@@ -50,12 +46,9 @@ export async function getPinnedItems(limit = 10): Promise<ItemWithRelations[]> {
   return items.map(toItemWithRelations);
 }
 
-export async function getRecentItems(limit = 10): Promise<ItemWithRelations[]> {
-  const user = await getDemoUser();
-  if (!user) return [];
-
+export async function getRecentItems(userId: string, limit = 10): Promise<ItemWithRelations[]> {
   const items = await prisma.item.findMany({
-    where: { userId: user.id },
+    where: { userId },
     orderBy: { createdAt: "desc" },
     take: limit,
     select: ITEM_SELECT,
@@ -69,13 +62,10 @@ export interface ItemStats {
   favorites: number;
 }
 
-export async function getItemStats(): Promise<ItemStats> {
-  const user = await getDemoUser();
-  if (!user) return { total: 0, favorites: 0 };
-
+export async function getItemStats(userId: string): Promise<ItemStats> {
   const [total, favorites] = await Promise.all([
-    prisma.item.count({ where: { userId: user.id } }),
-    prisma.item.count({ where: { userId: user.id, isFavorite: true } }),
+    prisma.item.count({ where: { userId } }),
+    prisma.item.count({ where: { userId, isFavorite: true } }),
   ]);
 
   return { total, favorites };
@@ -89,10 +79,7 @@ export interface ItemTypeWithCount {
   itemCount: number;
 }
 
-export async function getItemTypesWithCounts(): Promise<ItemTypeWithCount[]> {
-  const user = await getDemoUser();
-  if (!user) return [];
-
+export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },
     orderBy: { id: "asc" },
@@ -101,7 +88,7 @@ export async function getItemTypesWithCounts(): Promise<ItemTypeWithCount[]> {
       name: true,
       icon: true,
       color: true,
-      _count: { select: { items: { where: { userId: user.id } } } },
+      _count: { select: { items: { where: { userId } } } },
     },
   });
 

@@ -12,14 +12,16 @@ import { getItemTypesWithCounts } from "@/lib/db/items";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [session, sidebarItemTypes, sidebarFavoriteCollections, sidebarRecentCollections] =
+  const session = await auth();
+  if (!session?.user?.id) redirect("/sign-in");
+
+  const userId = session.user.id;
+  const [sidebarItemTypes, sidebarFavoriteCollections, sidebarRecentCollections] =
     await Promise.all([
-      auth(),
-      getItemTypesWithCounts(),
-      getFavoriteCollections(),
-      getRecentNonFavoriteCollections(),
+      getItemTypesWithCounts(userId),
+      getFavoriteCollections(userId),
+      getRecentNonFavoriteCollections(userId),
     ]);
-  if (!session?.user) redirect("/sign-in");
 
   const { name, email, image } = session.user;
 
@@ -39,10 +41,10 @@ export default async function DashboardPage() {
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <p className="text-muted-foreground">Your developer knowledge hub</p>
         </div>
-        <DashboardStats />
-        <CollectionsSection />
-        <PinnedItemsSection />
-        <RecentItemsSection />
+        <DashboardStats userId={userId} />
+        <CollectionsSection userId={userId} />
+        <PinnedItemsSection userId={userId} />
+        <RecentItemsSection userId={userId} />
       </div>
     </DashboardShell>
   );
