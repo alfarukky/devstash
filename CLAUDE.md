@@ -15,8 +15,15 @@ Read the following to get the full context of the project:
 
 - `npm run dev` — start the dev server (Turbopack, App Router)
 - `npm run build` — production build
-- `npm start` — run the production build
+- `npm start` — run the production build (loads `.env.production`, which points at the production database)
 - `npm run lint` — ESLint (flat config, `eslint-config-next` core-web-vitals + typescript)
+- `npm run db:generate` — regenerate the Prisma client (also runs on `postinstall`)
+- `npm run db:migrate` — create/apply a migration in development (`prisma migrate dev`)
+- `npm run db:deploy` — apply pending migrations in production (`prisma migrate deploy`)
+- `npm run db:studio` — open Prisma Studio
+- `npm run db:seed` — seed the demo user, system item types and sample collections
+- `npm run db:test` — check the database connection
+- `npm run db:delete-other-users` — delete every user except `demo@devstash.io` and their content (dry run by default; add `-- --confirm` to delete)
 
 No test runner is configured yet.
 

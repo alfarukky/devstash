@@ -336,7 +336,12 @@ git switch -c lesson-01-setup
 
 ## 📌 Status
 
-**In planning** — ready for environment setup & UI scaffolding.
+**In development** — foundation and auth are built; MVP item features are next.
+
+- **Built:** dashboard UI (sidebar, stats, collections, pinned/recent items), Neon Postgres + Prisma schema and seed data, NextAuth v5 auth (GitHub + email/password, email verification, forgot/reset password), and the profile page (stats, change password, delete account)
+- **Not yet:** the dashboard and sidebar still read the seeded demo user's data instead of the signed-in user's; Items CRUD, Collections management, Search, Tags and Free tier limits (see Roadmap)
+
+See the History in `context/current-feature.md` for details of each completed feature.
 
 ---
 
