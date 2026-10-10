@@ -1,16 +1,30 @@
-# Current Feature
+# Current Feature: Profile Page
 
-<!-- Feature name and short discription -->
+Create the `/profile` page with the signed-in user's info, usage stats, change password and delete account (spec: `context/features/profile-spec.md`).
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirement -->
+- Create a protected profile page at `/profile`; unauthenticated visitors are redirected to `/sign-in` with a `callbackUrl`
+- Display user info: name, email, avatar (GitHub image if available, otherwise initials from name/email) and account creation date
+- Show usage stats: total items, total collections, and a per-type breakdown covering all seven types (snippets, prompts, notes, commands, links, files, images), including types with zero items
+- Change password for users who have a password (email sign-up) only; GitHub-only accounts don't see the option
+- Delete account behind a confirmation dialog; deleting removes the user and all their content, signs them out and redirects away
+- Follow existing patterns: server component fetching with Prisma, Server Actions with Zod validation and `{ success, error }` results, shadcn/ui components, reuse of `UserAvatar`
 
 ## Notes
+
+- `src/proxy.ts` only matches `/dashboard/:path*`, so `/profile` must be added to the matcher (and the page should still check the session server-side)
+- The sidebar user menu already links to `/profile`, which currently 404s
+- Stats must be scoped to the signed-in user. The existing helpers in `src/lib/db/items.ts` / `collections.ts` are hardwired to `getDemoUser()`; add user-scoped queries rather than changing what the dashboard reads (dashboard still uses demo data — out of scope)
+- The seeded type for links is named `link` (not `url`); show the seven system types with counts from the user's items
+- Change password should require the current password, reuse the shared `password` rules (8–72 chars) with a confirm field, and hash with 12 bcrypt rounds like register
+- Delete account: `User` relations cascade (items, collections, tags, custom types, accounts, sessions); also clear the user's `VerificationToken` rows (verification + `password-reset:` identifiers). Consider requiring the user to type their email (or password) to confirm, since deletion is irreversible
+- No dialog component is installed yet — add shadcn `dialog`/`alert-dialog` (watch for the CLI's recurring bogus `import { cn } from "cn"` bug)
+- JWT sessions: after deletion, sign the user out so their cookie can't keep pointing at a deleted user
 
 ## History
 

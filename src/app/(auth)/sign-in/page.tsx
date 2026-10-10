@@ -20,6 +20,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
   const registered = firstParam(params.registered) === "1";
   const verified = firstParam(params.verified) === "1";
   const reset = firstParam(params.reset) === "1";
+  const deleted = firstParam(params.deleted) === "1";
 
   return (
     <Card>
@@ -42,6 +43,9 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
           <p className="rounded-lg bg-muted px-3 py-2 text-sm">
             Password updated. Sign in with your new password.
           </p>
+        )}
+        {deleted && (
+          <p className="rounded-lg bg-muted px-3 py-2 text-sm">Your account has been deleted.</p>
         )}
         {error && (
           <p role="alert" className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
