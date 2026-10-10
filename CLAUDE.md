@@ -19,3 +19,7 @@ Read the following to get the full context of the project:
 - `npm run lint` — ESLint (flat config, `eslint-config-next` core-web-vitals + typescript)
 
 No test runner is configured yet.
+
+## Note
+
+Ensure that you never add "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>" or any information referencing claudeAI as the author in git commits.
