@@ -1,6 +1,7 @@
+import { getAppUrl } from "@/lib/app-url";
 import { sendVerificationEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
-import { APP_URL, findToken, issueToken, PASSWORD_RESET_PREFIX } from "@/lib/tokens";
+import { findToken, issueToken, PASSWORD_RESET_PREFIX } from "@/lib/tokens";
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -13,10 +14,12 @@ function isVerificationIdentifier(identifier: string) {
 // Replaces any outstanding token for the email and sends a fresh link. Returns false
 // (without sending) if a token was issued within the cooldown window.
 export async function issueVerificationEmail(email: string) {
+  // Resolved first so a missing APP_URL fails before a token is stored and the cooldown starts.
+  const appUrl = getAppUrl();
   const token = await issueToken(email, TOKEN_TTL_MS);
   if (!token) return false;
 
-  const verifyUrl = new URL("/verify-email", APP_URL);
+  const verifyUrl = new URL("/verify-email", appUrl);
   verifyUrl.searchParams.set("token", token);
   await sendVerificationEmail(email, verifyUrl.toString());
   return true;

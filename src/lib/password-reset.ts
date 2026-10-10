@@ -1,8 +1,9 @@
 import bcrypt from "bcryptjs";
 
+import { getAppUrl } from "@/lib/app-url";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
-import { APP_URL, findToken, issueToken, PASSWORD_RESET_PREFIX } from "@/lib/tokens";
+import { findToken, issueToken, PASSWORD_RESET_PREFIX } from "@/lib/tokens";
 
 const TOKEN_TTL_MS = 60 * 60 * 1000;
 
@@ -18,10 +19,12 @@ export async function issuePasswordResetEmail(email: string) {
   const user = await prisma.user.findUnique({ where: { email }, select: { password: true } });
   if (!user?.password) return;
 
+  // Resolved first so a missing APP_URL fails before a token is stored and the cooldown starts.
+  const appUrl = getAppUrl();
   const token = await issueToken(`${PASSWORD_RESET_PREFIX}${email}`, TOKEN_TTL_MS);
   if (!token) return;
 
-  const resetUrl = new URL("/reset-password", APP_URL);
+  const resetUrl = new URL("/reset-password", appUrl);
   resetUrl.searchParams.set("token", token);
   await sendPasswordResetEmail(email, resetUrl.toString());
 }

@@ -4,8 +4,6 @@ import { prisma } from "@/lib/prisma";
 
 const RESEND_COOLDOWN_MS = 60 * 1000;
 
-export const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
-
 // Verification tokens use the bare email as their identifier; password-reset tokens add this
 // prefix so the two flows sharing the table can't consume or replace each other's tokens.
 export const PASSWORD_RESET_PREFIX = "password-reset:";
