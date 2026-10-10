@@ -1,16 +1,30 @@
-# Current Feature
+# Current Feature: Forgot Password
 
-<!-- Feature name and short discription -->
+Add a "Forgot password?" link to sign-in and a full reset flow: request a reset link by email (via Resend), then set a new password from that link, reusing the existing `VerificationToken` model for reset tokens.
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirement -->
+- "Forgot password?" link on `/sign-in` (next to the password field) leading to `/forgot-password`
+- `/forgot-password` form takes an email and sends a reset link via Resend; it always shows the same "If an account exists, we've sent a link" message, so it doesn't reveal which emails are registered
+- Only accounts with a password get an email; GitHub-only users (null `password`) get nothing
+- Reset tokens are stored in the existing `VerificationToken` table: random, hashed (SHA-256) like verification tokens, single-use, short expiry (1h), with any older reset token for the email replaced
+- `/reset-password?token=...` shows a new-password + confirm form (same 8–72 char rules as register, validated with Zod); invalid/expired/used tokens show a clear error with a link to request a new one
+- Submitting a valid reset updates the bcrypt hash (12 rounds), deletes the token, and redirects to `/sign-in?reset=1` with a success message
+- Email verification and GitHub sign-in keep working unchanged
 
 ## Notes
+
+- Reset and verification tokens must not collide in the shared table: `issueVerificationEmail()` currently deletes all tokens where `identifier = email`, and `verifyEmailToken()` looks tokens up by hash alone — so a reset token could be consumed by `/verify-email` (and vice versa). Namespace the identifier (e.g. `password-reset:<email>`) and have each flow check the prefix
+- Reuse the existing helpers: `src/lib/email.ts` (Resend client, retry on network errors, idempotency key), `src/lib/verification.ts` hashing/cooldown pattern, `emailSchema` from `src/lib/auth-schemas.ts`, and `APP_URL` for the link base (not the request `Host` header)
+- Same 60s resend cooldown as verification emails to limit email spam
+- Decide whether a successful reset should also mark an unverified email as verified, since clicking the reset link proves ownership of the inbox (recommended: yes)
+- Server Actions for the form submissions per coding standards, returning `{ success, error }`
+- Sessions are JWTs, so existing sessions on other devices can't be revoked on reset without extra work — out of scope, note as a follow-up
+- No schema migration should be needed
 
 ## History
 

@@ -19,6 +19,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
   const error = firstParam(params.error);
   const registered = firstParam(params.registered) === "1";
   const verified = firstParam(params.verified) === "1";
+  const reset = firstParam(params.reset) === "1";
 
   return (
     <Card>
@@ -35,6 +36,11 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
         {verified && (
           <p className="rounded-lg bg-muted px-3 py-2 text-sm">
             Email verified. Sign in to continue.
+          </p>
+        )}
+        {reset && (
+          <p className="rounded-lg bg-muted px-3 py-2 text-sm">
+            Password updated. Sign in with your new password.
           </p>
         )}
         {error && (
