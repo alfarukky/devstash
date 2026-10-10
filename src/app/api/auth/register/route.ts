@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@/generated/prisma/client";
 import { registerSchema } from "@/lib/auth-schemas";
 import { prisma } from "@/lib/prisma";
+import { issueVerificationEmail } from "@/lib/verification";
 
 function emailTaken() {
   return NextResponse.json(
@@ -38,6 +39,13 @@ export async function POST(request: Request) {
       data: { name, email, password: await bcrypt.hash(password, 12) },
       select: { id: true, name: true, email: true },
     });
+
+    // The account exists either way; if sending fails, the user can request a new link.
+    try {
+      await issueVerificationEmail(user.email);
+    } catch (error) {
+      console.error("Verification email failed:", error);
+    }
 
     return NextResponse.json({ success: true, data: user }, { status: 201 });
   } catch (error) {

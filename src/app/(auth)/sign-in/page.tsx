@@ -18,6 +18,7 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
   const callbackUrl = firstParam(params.callbackUrl);
   const error = firstParam(params.error);
   const registered = firstParam(params.registered) === "1";
+  const verified = firstParam(params.verified) === "1";
 
   return (
     <Card>
@@ -28,7 +29,12 @@ export default async function SignInPage({ searchParams }: PageProps<"/sign-in">
       <CardContent className="flex flex-col gap-4">
         {registered && (
           <p className="rounded-lg bg-muted px-3 py-2 text-sm">
-            Account created. Sign in to continue.
+            Account created. Check your email for a verification link, then sign in.
+          </p>
+        )}
+        {verified && (
+          <p className="rounded-lg bg-muted px-3 py-2 text-sm">
+            Email verified. Sign in to continue.
           </p>
         )}
         {error && (

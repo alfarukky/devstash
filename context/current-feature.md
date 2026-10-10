@@ -1,16 +1,30 @@
-# Current Feature
+# Current Feature: Email Verification on Register
 
-<!-- Feature name and short discription -->
+Require users who register with email/password to verify their address by clicking a link sent via Resend before they can sign in.
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirement -->
+- Install the `resend` SDK and add a small email helper in `src/lib/` that reads `RESEND_API_KEY` from `.env`
+- On successful `POST /api/auth/register`, generate a random, single-use, expiring token (e.g. 24h), store it in the existing `VerificationToken` table (`identifier` = email), and send a verification email containing a link to a verify route
+- Add a verify endpoint/page (e.g. `/verify-email?token=...`) that validates the token, sets `User.emailVerified`, deletes the token, and redirects to `/sign-in` with a success message
+- Expired/invalid/already-used tokens show a clear error, with a way to resend the verification email
+- Credentials sign-in rejects users whose `emailVerified` is null, showing a "Please verify your email" message (with resend option) instead of the generic "Invalid email or password"
+- After registering, `/register` redirects to `/sign-in?registered=1` (or a "check your email" screen) telling the user to check their inbox instead of "Account created"
+- GitHub OAuth sign-in is unaffected
 
 ## Notes
+
+- `RESEND_API_KEY` is already in `.env`; no sender address var exists yet — add `EMAIL_FROM` (Resend's `onboarding@resend.dev` works for testing but only delivers to the Resend account's own email until a domain is verified)
+- Base URL for the link should come from an env var (`AUTH_URL`/`NEXT_PUBLIC_APP_URL`), not the request `Host` header, to avoid host-header injection
+- No migration needed: `User.emailVerified` and `VerificationToken` already exist in the schema
+- Store a hash of the token rather than the raw token if practical; compare in constant time
+- Existing users (seeded demo user, test users from earlier phases) have `emailVerified = null` — decide whether to backfill them as verified so they can still sign in
+- Resolves the Auth Phase 2 follow-up about registering an email you don't own blocking its real owner's GitHub sign-in (only partially — the unverified user row still exists until cleaned up)
+- Rate limiting on resend is out of scope unless trivial
 
 ## History
 
