@@ -17,24 +17,19 @@ const EMAIL_FROM = process.env.EMAIL_FROM ?? "DevStash <onboarding@resend.dev>";
 const MAX_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 500;
 
-export async function sendVerificationEmail(to: string, verifyUrl: string) {
+interface EmailContent {
+  subject: string;
+  text: string;
+  html: string;
+}
+
+async function sendEmail(to: string, kind: string, content: EmailContent) {
   // Reused across retries so Resend drops a duplicate if an earlier attempt actually went through.
-  const idempotencyKey = `verify-email/${randomUUID()}`;
+  const idempotencyKey = `${kind}/${randomUUID()}`;
 
   for (let attempt = 1; ; attempt++) {
     const { error } = await resend.emails.send(
-      {
-        from: EMAIL_FROM,
-        to,
-        subject: "Verify your DevStash email",
-        text: `Welcome to DevStash! Verify your email by opening this link:\n\n${verifyUrl}\n\nThe link expires in 24 hours. If you didn't create an account, you can ignore this email.`,
-        html: `
-          <p>Welcome to DevStash!</p>
-          <p>Verify your email by clicking the link below:</p>
-          <p><a href="${verifyUrl}">Verify email</a></p>
-          <p>The link expires in 24 hours. If you didn't create an account, you can ignore this email.</p>
-        `,
-      },
+      { from: EMAIL_FROM, to, ...content },
       { idempotencyKey },
     );
     if (!error) return;
@@ -43,8 +38,33 @@ export async function sendVerificationEmail(to: string, verifyUrl: string) {
     // API errors like an invalid recipient won't succeed on retry.
     const isNetworkError = error.statusCode == null;
     if (!isNetworkError || attempt >= MAX_ATTEMPTS) {
-      throw new Error(`Failed to send verification email: ${error.message}`);
+      throw new Error(`Failed to send ${kind} email: ${error.message}`);
     }
     await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY_MS * attempt));
   }
+}
+
+export async function sendVerificationEmail(to: string, verifyUrl: string) {
+  await sendEmail(to, "verify-email", {
+    subject: "Verify your DevStash email",
+    text: `Welcome to DevStash! Verify your email by opening this link:\n\n${verifyUrl}\n\nThe link expires in 24 hours. If you didn't create an account, you can ignore this email.`,
+    html: `
+      <p>Welcome to DevStash!</p>
+      <p>Verify your email by clicking the link below:</p>
+      <p><a href="${verifyUrl}">Verify email</a></p>
+      <p>The link expires in 24 hours. If you didn't create an account, you can ignore this email.</p>
+    `,
+  });
+}
+
+export async function sendPasswordResetEmail(to: string, resetUrl: string) {
+  await sendEmail(to, "password-reset", {
+    subject: "Reset your DevStash password",
+    text: `Someone asked to reset the password for your DevStash account. Set a new password by opening this link:\n\n${resetUrl}\n\nThe link expires in 1 hour. If you didn't ask for this, you can ignore this email; your password won't change.`,
+    html: `
+      <p>Someone asked to reset the password for your DevStash account.</p>
+      <p><a href="${resetUrl}">Set a new password</a></p>
+      <p>The link expires in 1 hour. If you didn't ask for this, you can ignore this email; your password won't change.</p>
+    `,
+  });
 }
