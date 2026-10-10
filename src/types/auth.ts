@@ -7,4 +7,5 @@ export interface SessionUser {
 export interface AuthActionResult {
   success: boolean;
   error?: string;
+  unverified?: boolean;
 }

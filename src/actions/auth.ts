@@ -1,9 +1,11 @@
 "use server";
 
-import { AuthError } from "next-auth";
+import { AuthError, CredentialsSignin } from "next-auth";
 
 import { signIn, signOut } from "@/auth";
-import { signInSchema } from "@/lib/auth-schemas";
+import { emailSchema, signInSchema } from "@/lib/auth-schemas";
+import { prisma } from "@/lib/prisma";
+import { issueVerificationEmail } from "@/lib/verification";
 import type { AuthActionResult } from "@/types/auth";
 
 const DEFAULT_REDIRECT = "/dashboard";
@@ -34,6 +36,9 @@ export async function signInWithCredentials(
       redirectTo: safeRedirect(formData.get("callbackUrl")),
     });
   } catch (error) {
+    if (error instanceof CredentialsSignin && error.code === "email_not_verified") {
+      return { success: false, error: "Please verify your email before signing in.", unverified: true };
+    }
     if (error instanceof AuthError) {
       return {
         success: false,
@@ -45,6 +50,32 @@ export async function signInWithCredentials(
     }
     // signIn signals a successful sign-in by throwing Next's redirect, which must propagate.
     throw error;
+  }
+
+  return { success: true };
+}
+
+// Always reports success so the response doesn't reveal whether an account exists.
+export async function resendVerificationEmail(
+  _prevState: AuthActionResult,
+  formData: FormData,
+): Promise<AuthActionResult> {
+  const parsed = emailSchema.safeParse(formData.get("email"));
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid email" };
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { email: parsed.data },
+      select: { password: true, emailVerified: true },
+    });
+    if (user?.password && !user.emailVerified) {
+      await issueVerificationEmail(parsed.data);
+    }
+  } catch (error) {
+    console.error("Resending verification email failed:", error);
+    return { success: false, error: "Couldn't send the email. Please try again." };
   }
 
   return { success: true };
