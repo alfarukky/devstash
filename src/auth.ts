@@ -8,6 +8,9 @@ import authConfig from "@/auth.config";
 import { signInSchema } from "@/lib/auth-schemas";
 import { prisma } from "@/lib/prisma";
 
+// A cost-12 bcrypt hash of a throwaway string (same cost as real hashes, so compares take as long).
+const DUMMY_HASH = "$2b$12$0MYoi1PZlUgohVjzcGItZeeSpODfAcfLGnlz34aJZhHu8clP/rbX2";
+
 // Thrown only after the password checks out, so it doesn't reveal which emails exist.
 class EmailNotVerifiedError extends CredentialsSignin {
   code = "email_not_verified";
@@ -39,10 +42,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             emailVerified: true,
           },
         });
-        if (!user?.password) return null;
-
-        const valid = await bcrypt.compare(parsed.data.password, user.password);
-        if (!valid) return null;
+        // Compare against a dummy hash when there's no password to check, so unknown and
+        // GitHub-only emails take as long as wrong passwords and timing doesn't reveal them.
+        const valid = await bcrypt.compare(parsed.data.password, user?.password ?? DUMMY_HASH);
+        if (!user?.password || !valid) return null;
         if (!user.emailVerified) throw new EmailNotVerifiedError();
 
         return { id: user.id, name: user.name, email: user.email, image: user.image };

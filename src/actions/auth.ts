@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { AuthError, CredentialsSignin } from "next-auth";
 
 import { signIn, signOut } from "@/auth";
@@ -55,7 +56,8 @@ export async function signInWithCredentials(
   return { success: true };
 }
 
-// Always reports success so the response doesn't reveal whether an account exists.
+// Always reports success, and does the lookup and send after responding, so neither the
+// result nor the response time reveals whether an account exists or is verified.
 export async function resendVerificationEmail(
   _prevState: AuthActionResult,
   formData: FormData,
@@ -65,18 +67,20 @@ export async function resendVerificationEmail(
     return { success: false, error: parsed.error.issues[0]?.message ?? "Invalid email" };
   }
 
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email: parsed.data },
-      select: { password: true, emailVerified: true },
-    });
-    if (user?.password && !user.emailVerified) {
-      await issueVerificationEmail(parsed.data);
+  const email = parsed.data;
+  after(async () => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: { password: true, emailVerified: true },
+      });
+      if (user?.password && !user.emailVerified) {
+        await issueVerificationEmail(email);
+      }
+    } catch (error) {
+      console.error("Resending verification email failed:", error);
     }
-  } catch (error) {
-    console.error("Resending verification email failed:", error);
-    return { success: false, error: "Couldn't send the email. Please try again." };
-  }
+  });
 
   return { success: true };
 }
